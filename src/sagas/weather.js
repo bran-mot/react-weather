@@ -11,6 +11,7 @@ export function* watchReuqestWeather(action) {
 function* fetchWeather(action) {
   const response = yield fetch(
     `${url}/weather?q=${action.city}&appid=${apiKey}`
-  ).then(payload => payload.json());
-  yield put({ type: WEATHER_REC, response });
+  );
+  const payload = yield response.json();
+  yield put({ type: WEATHER_REC, payload });
 }

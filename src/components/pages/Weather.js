@@ -6,6 +6,10 @@ import WeatherIcon from '../WeatherIcon';
 import styled from 'styled-components';
 import TabBar from '../TabBar';
 import Tab from '../Tab';
+import { tempConverter, speedConverter } from '../../utils/convert';
+import { getDirection } from '../../utils/direction';
+import { getDatestring, getDateString } from '../../utils/dateTime';
+import { getWeatherIcon } from '../../utils/weather';
 
 const StyledWeather = styled.div`
     .hi-lo div {
@@ -13,12 +17,43 @@ const StyledWeather = styled.div`
     }
     .city-details{
       width: 100%;
+      text-align: center;
     }
     .current-weather{
+      img{
+        width: 180px;
+        height: auto;
+      }
       justify-content: center;
-      div{
+      align-items:center;
+      div:first-child{
+        text-align: center;
+      }
+      & > div{
         width: 30%;
         padding: 10px;
+        .hi-lo{
+          justify-content: space-evenly;
+          width: 100%;
+          .div{
+            width: 50%;
+          }
+        }
+      }
+    }
+    .weather-details{
+      width: 100%;
+      justify-content: center;
+    }
+    table{
+      tr{
+        td{
+          padding: 5px;
+        }
+        td:first-child{
+          text-align: right;
+          font-weight: bold;
+        } 
       }
     }
 `;
@@ -29,37 +64,58 @@ function Weather(props) {
       <NavBar />
       {props.noCity === false ? (
         <FlexContainer className='column'>
-          <FlexContainer className='city-details'>
-            <h3>
+          <div className='city-details'>
+            <h2>
               {props.city}, {props.country}
-            </h3>
-          </FlexContainer>
-          <TabBar>
-            <Tab className='active'>Current</Tab>
-            <Tab>Forecast</Tab>
-          </TabBar>
+            </h2>
+            <h5>{getDateString(props.timestamp, props.units)}</h5>
+          </div>
           <FlexContainer className='current-weather'>
             <div>
-              <WeatherIcon className='main'></WeatherIcon>
-              <h1>{props.temp.temp} &deg;K</h1>
-              <h1>
+              <img src={`/assets/${getWeatherIcon(props.weather.id)}`} />
+              <h1>{tempConverter(props.temp.temp, props.units)}</h1>
+              <h3>
                 {props.weather.main}, {props.weather.description}
-              </h1>
+              </h3>
             </div>
-            <ul>
-              <li>Hi: {props.temp.temp_max}&deg;K</li>
-              <li>Lo: {props.temp.temp_min}&deg;K</li>
-              <li>Pressure: {props.temp.pressure}</li>
-              <li>Humidity: {props.temp.humidity}</li>
-            </ul>
-            <ul>
-              <li>Wind Speed: {props.wind.speed}</li>
-              <li>Direction: {props.wind.deg}</li>
-            </ul>
+            <div>
+              <FlexContainer className='hi-lo'>
+                <div>
+                  <h5>Hi:</h5>
+                  <h3>{tempConverter(props.temp.temp_max, props.units)}</h3>
+                </div>
+                <div>
+                  <h5>Lo:</h5>
+                  <h3>{tempConverter(props.temp.temp_min, props.units)}</h3>
+                </div>
+              </FlexContainer>
+              <FlexContainer className='weather-details fluid'>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>Pressure</td>
+                      <td>{props.temp.pressure}</td>
+                    </tr>
+                    <tr>
+                      <td>Humidity</td>
+                      <td>{props.temp.humidity}</td>
+                    </tr>
+                    <tr>
+                      <td>Wind Speed</td>
+                      <td>
+                        {getDirection(props.wind.deg) +
+                          ' ' +
+                          speedConverter(props.wind.speed, props.units)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </FlexContainer>
+            </div>
           </FlexContainer>
         </FlexContainer>
       ) : (
-        ''
+        <h1>Search for a city to get started</h1>
       )}
     </StyledWeather>
   );
@@ -67,6 +123,8 @@ function Weather(props) {
 
 const mapStateToProps = state => {
   return {
+    timestamp: state.weather.dt,
+    units: state.weather.units,
     noCity: state.weather.initial,
     city: state.weather.name,
     country: state.weather.sys.country,

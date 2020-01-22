@@ -1,4 +1,4 @@
-import { REQ_WEATHER, WEATHER_REC } from '../actions/weather';
+import { REQ_WEATHER, WEATHER_REC, SWITCH_UNITS } from '../actions/weather';
 
 const initState = {
   cod: '200',
@@ -888,6 +888,7 @@ const initState = {
 
 const single = {
   initial: true,
+  units: 'metric',
   coord: { lon: 139, lat: 35 },
   weather: [
     {
@@ -936,10 +937,14 @@ export default function(previousState = single, action) {
     case WEATHER_REC:
       return {
         ...previousState,
-        ...action.response,
+        ...action.payload,
         initial: false
       };
-      break;
+    case SWITCH_UNITS:
+      return {
+        ...previousState,
+        units: action.unit
+      };
   }
   return previousState;
 }
